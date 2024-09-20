@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
+/*   By: owatanab <owatanab@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 12:59:00 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/19 17:28:45 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/09/20 14:56:35 by owatanab         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,20 +146,18 @@ int	main(int argc, char *argv[])
 	thread = malloc(sizeof(pthread_t) * philo.philo_num);
 	if (thread == NULL)
 		return (1);
+	next_time(&philo, NULL);
 	i = 0;
-	if (next_time(&philo) == 0)
+	while (i < philo.philo_num)
 	{
-		while (i < philo.philo_num)
-		{
-			pthread_create(thread + i, NULL, routine, (void *)&philo);
-			++i;
-		}
-		i = 0;
-		while (i < philo.philo_num)
-		{
-			pthread_join(thread[i], NULL);
-			++i;
-		}
+		pthread_create(thread + i, NULL, routine, (void *)&philo);
+		++i;
+	}
+	i = 0;
+	while (i < philo.philo_num)
+	{
+		pthread_join(thread[i], NULL);
+		++i;
 	}
 	free(thread);
 	free(philo.fork_status);

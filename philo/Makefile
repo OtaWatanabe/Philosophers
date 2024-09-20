@@ -1,6 +1,6 @@
 CFLAGS = -Wall -Wextra -Werror
 CC = cc
-SRCS = main.c routine.c
+SRCS = main.c routine.c time.c error.c
 NAME = philo
 OBJS = $(SRCS:.c=.o)
 all: $(NAME)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_philo.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
+/*   By: owatanab <owatanab@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 12:59:32 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/19 17:29:05 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/09/20 17:44:39 by owatanab         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,13 +35,19 @@ typedef struct s_philo
 
 typedef struct s_info
 {
-	int				id;
-	struct timeval	now;
-	struct timeval	last_meal;
-	int				status;
+	int			id;
+	long long	now;
+	long long	last_meal;
+	int			after_sleep;
 }	t_info;
 
-void	*routine(void *philo);
-int		next_time(t_philo *philo);
+void		*routine(void *philo);
+void		load_status(t_info *info, t_philo *philo, int fork_num);
+void		put_down_fork(t_philo *philo, int id);
+void		wait_mseconds(t_info *info, t_philo *philo, int msec);
+void		next_time(t_philo *philo, t_info *info);
+long long	timestamp(t_philo *philo);
+int			get_fork(t_philo *philo, t_info *info);
+void		philo_usleep(t_philo *philo, int usec);
 
 #endif
