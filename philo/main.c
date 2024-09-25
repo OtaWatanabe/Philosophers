@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: owatanab <owatanab@student.42.fr>          +#+  +:+       +#+        */
+/*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 12:59:00 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/20 14:56:35 by owatanab         ###   ########.fr       */
+/*   Updated: 2024/09/25 10:10:22 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,19 +119,41 @@ int	philo_init(t_philo *philo, int argc, char *argv[])
 	philo->time_sleep = ft_atoi(argv[4]);
 	if (argc == 6)
 		philo->must_eat = ft_atoi(argv[5]);
-	if (pthread_mutex_init(&philo->mutex, NULL) != 0)
+	if (pthread_mutex_init(&philo->id_mutex, NULL) != 0 || pthread_mutex_init(&philo->print_mutex, NULL) != 0)
 	{
 		printf("mutex init error\n");
 		return (-1);
 	}
 	philo->id = 0;
-	philo->fork_status = malloc(philo->philo_num);
 	philo->exit = 0;
-	if (philo->fork_status == NULL)
+	return (set_fork(philo));
+}
+
+int	set_fork(t_philo *philo)
+{
+	int	i;
+
+	philo->fork_count = malloc(sizeof(int) * philo->philo_num);
+	philo->fork_mutex = malloc(sizeof(pthread_mutex_t) * philo->philo_num);
+	if (philo->fork_count == NULL || philo->fork_mutex == NULL)
 	{
-		printf("malloc error\n");
+		free(philo->fork_count);
+		free(philo->fork_mutex);
 		return (-1);
 	}
+	i = 0;
+	while (i < philo->philo_num)
+	{
+		if (pthread_mutex_init(philo->fork_mutex + i, NULL) == -1)
+		{
+			printf("mutex init error\n");
+			free(philo->fork_count);
+			free(philo->fork_mutex);
+			return (-1);
+		}
+		++i;
+	}
+	memset(philo->fork_count, 0, philo->philo_num);
 	return (0);
 }
 
@@ -146,7 +168,7 @@ int	main(int argc, char *argv[])
 	thread = malloc(sizeof(pthread_t) * philo.philo_num);
 	if (thread == NULL)
 		return (1);
-	next_time(&philo, NULL);
+	philo.start = timestamp(&philo) + 10;
 	i = 0;
 	while (i < philo.philo_num)
 	{
@@ -160,5 +182,6 @@ int	main(int argc, char *argv[])
 		++i;
 	}
 	free(thread);
-	free(philo.fork_status);
+	free(philo.fork_count);
+	free(philo.fork_mutex);
 }

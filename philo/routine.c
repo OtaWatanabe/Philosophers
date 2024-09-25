@@ -3,102 +3,111 @@
 /*                                                        :::      ::::::::   */
 /*   routine.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: owatanab <owatanab@student.42.fr>          +#+  +:+       +#+        */
+/*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 19:36:05 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/20 17:50:49 by owatanab         ###   ########.fr       */
+/*   Updated: 2024/09/25 11:26:44 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_philo.h"
 
-int	get_fork(t_philo *philo, t_info *info)
-{
-	int	ret;
+// void	get_fork(t_philo *philo, t_info *info)
+// {
+// 	if (philo->exit)
+// 		return ;
+// 	pthread_mutex_lock(philo->fork_mutex + philo->id - 1);
+// 	pthread_mutex_lock(philo->fork_mutex + philo->id % philo->philo_num);
+// 	if (philo->fork_count[info->id - 1] <= info->now)
+// 	{
+// 		print_fork(philo, info);
+// 		++philo->fork_count[info->id - 1];
+// 	}
+// 	if (info->id == philo->philo_num && philo->fork_count[0] <= info->now)
+// 	{
+// 		print_fork(philo, info);
+// 		++philo->fork_count[info->id - 1];
+// 	}
+// 	else if (info->id != philo->philo_num && philo->fork_count[info->id] <= info->now)
+// 	{
+// 		print_fork(philo, info);
+// 		++philo->fork_count[info->id];
+// 	}
+// 	pthread_mutex_unlock(philo->fork_mutex + philo->id - 1);
+// 	pthread_mutex_unlock(philo->fork_mutex + philo->id % philo->philo_num);
+// }
 
-	if (philo->exit)
-		return (-1);
-	if (philo->fork_status[info->id - 1] == 0)
-	{
-		printf("%lld %d has taken a fork\n", info->now, info->id);
-		philo->fork_status[info->id - 1] = info->id;
-	}
-	if (info->id == philo->philo_num && philo->fork_status[0] == 0)
-	{
-		printf("%lld %d has taken a fork\n", info->now, info->id);
-		philo->fork_status[0] = info->id;
-	}
-	else if (info->id != philo->philo_num && philo->fork_status[info->id] == 0)
-	{
-		printf("%lld %d has taken a fork\n", info->now, info->id);
-		philo->fork_status[0] = info->id;
-	}
-	ret = 0;
-	if (philo->fork_status[info->id - 1] == info->id - 1)
-		++ret;
-	if ((info->id == philo->philo_num && philo->fork_status[0] == info->id)
-		|| (info->id < philo->philo_num && philo->fork_status[info->id] == info->id))
-		++ret;
-	return (ret);
+void	set_eat_time(t_philo *philo, t_info *info)
+{
+	pthread_mutex_lock(philo->fork_mutex + info->id - 1);
+	pthread_mutex_lock(philo->fork_mutex + info->id % philo->philo_num);
+	philo->fork_count[info->id - 1] = info->now + philo->time_eat;
+	philo->fork_count[info->id % philo->philo_num] = info->now + philo->time_eat;
+	pthread_mutex_unlock(philo->fork_mutex + info->id - 1);
+	pthread_mutex_unlock(philo->fork_mutex + info->id % philo->philo_num);
+	info->last_meal = info->now;
 }
 
-void	put_down_fork(t_philo *philo, int id)
+void	load_status(t_info *info, t_philo *philo)
 {
-	if (id == philo->philo_num)
-		philo->fork_status[0] = 0;
-	else
-		philo->fork_status[id] = 0;
-	philo->fork_status[id - 1] = 0;
-}
-
-void	load_status(t_info *info, t_philo *philo, int fork_num)
-{
-	if (philo->exit)
-		return ;
-	if (fork_num < 2)
+	int	n;
+	
+	n = philo->fork_count[info->id - 1] - info->fork_count;
+	info->fork_count += n;
+	print_fork(philo, info, n);
+	if (info->after_sleep && info->fork_count < 2)
 	{
-		printf("%lld %d is thinking\n", info->now, info->id);
-		return ;
+		info->after_sleep = 0;
+		print_action(philo, info, "thinking");
 	}
-	printf("%lld %d is eating\n", info->now, info->id);
-	wait_mseconds(info, philo, philo->time_die);
-	if (philo->exit)
+	if (info->fork_count < 2)
 		return ;
-	printf("%lld %d is sleeping\n", info->now, info->id);
-	pthread_mutex_lock(&philo->mutex);
-	put_down_fork(philo, info->id);
-	pthread_mutex_unlock(&philo->mutex);
-	wait_mseconds(info, philo, philo->time_die);
+	print_action(philo, info, "eating");
+	info->last_meal = info->now;
+	wait_mseconds(info, philo, philo->time_eat);
+	pthread_mutex_lock(&philo->fork_mutex[(info->id + philo->philo_num - 2) % philo->philo_num]);
+	++philo->fork_count[(info->id + philo->philo_num - 2) % philo->philo_num];
+	pthread_mutex_unlock(&philo->fork_mutex[(info->id + philo->philo_num - 2) % philo->philo_num]);
+	pthread_mutex_lock(&philo->fork_mutex[info->id % philo->philo_num]);
+	++philo->fork_count[info->id % philo->philo_num];
+	pthread_mutex_unlock(&philo->fork_mutex[info->id % philo->philo_num]);
+	philo->fork_count[info->id - 1] = 0;
+	print_action(philo, info, "sleeping");
+	wait_mseconds(info, philo, philo->time_sleep);
 	info->after_sleep = 1;
+}
+
+void	print_time(int id)
+{
+	struct timeval	tv;
+	
+	gettimeofday(&tv, NULL);
+	printf("%d: time: %ld\n", id, tv.tv_sec * 1000000 + tv.tv_usec);
 }
 
 void	*routine(void *ptr)
 {
-	t_philo			*philo;
-	t_info			info;
-	int				fork_num;
+	t_philo	*philo;
+	t_info	info;
 
-	info.after_sleep = 0;
+	memset(&info, 0, sizeof(t_info));
 	philo = (t_philo *)ptr;
-	pthread_mutex_lock(&philo->mutex);
+	pthread_mutex_lock(&philo->id_mutex);
 	info.id = ++philo->id;
-	pthread_mutex_unlock(&philo->mutex);
-	info.now = timestamp(philo);
+	pthread_mutex_unlock(&philo->id_mutex);
+	info.now = philo->start;
 	info.last_meal = info.now;
-	if (info.id % 2)
-		philo_usleep(philo, 100);
+	init_routine(philo, &info);
 	while (philo->exit == 0)
 	{
-		pthread_mutex_lock(&philo->mutex);
-		fork_num = get_fork(philo, &info);
-		pthread_mutex_unlock(&philo->mutex);
-		if (info.after_sleep || fork_num == 2)
-		{
-			info.after_sleep = 0;
-			load_status(&info, philo, fork_num);
-		}
-		if (!info.after_sleep)
+		// print_time(info.id);
+		if (philo->fork_count[info.id - 1] < 2)
+			philo_usleep(philo, 500);
+		if (info.fork_count != philo->fork_count[info.id - 1] || info.after_sleep)
+			load_status(&info, philo);
+		else
 			next_time(philo, &info);
+		// printf("time: %lld fork: %d id: %d\n", info.now, philo->fork_count[info.id - 1], info.id);
 	}
 	return (NULL);
 }
