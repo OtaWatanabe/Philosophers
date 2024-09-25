@@ -1,6 +1,7 @@
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror 
+CFRAGS += -fsanitize=thread
 CC = cc
-SRCS = main.c routine.c time.c error.c print.c
+SRCS = main.c routine.c time.c print.c init.c
 NAME = philo
 OBJS = $(SRCS:.c=.o)
 all: $(NAME)

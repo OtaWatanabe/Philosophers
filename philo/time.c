@@ -6,33 +6,60 @@
 /*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/20 13:47:20 by owatanab          #+#    #+#             */
-/*   Updated: 2024/09/25 10:59:59 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/09/25 23:06:55 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_philo.h"
 
-void	wait_mseconds(t_info *info, t_philo *philo, int msec)
+void	wait_time(t_info *info, t_philo *philo, long long time)
 {
-	if (philo->exit)
-		return ;
-	while (msec-- && philo->exit == 0)
-		next_time(philo, info);
+	while (1)
+	{
+		pthread_mutex_lock(&philo->time_mutex);
+		if (time <= philo->time)
+		{
+			info->now = philo->time;
+			pthread_mutex_unlock(&philo->time_mutex);
+			return ;
+		}
+		pthread_mutex_unlock(&philo->time_mutex);
+		pthread_mutex_lock(&philo->print_mutex);
+		if (philo->exit)
+		{
+			pthread_mutex_unlock(&philo->print_mutex);
+			return ;
+		}
+		pthread_mutex_unlock(&philo->print_mutex);
+		philo_usleep(philo, 500);
+	}
 }
 
 void	next_time(t_philo *philo, t_info *info)
 {
-	long long	now;
-
-	now = info->now;
-	while (philo->exit == 0 && now == timestamp(philo))
-		philo_usleep(philo, 50);
-	if (philo->exit == 0)
+	while (1)
 	{
-		info->now = now + 1;
-		if (philo->time_die < info->now - info->last_meal)
-			print_death(philo, info);
+		pthread_mutex_lock(&philo->time_mutex);
+		if (info->now != philo->time)
+		{
+			pthread_mutex_unlock(&philo->time_mutex);
+			break ;
+		}
+		pthread_mutex_unlock(&philo->time_mutex);
+		pthread_mutex_lock(&philo->print_mutex);
+		if (philo->exit)
+		{
+			pthread_mutex_unlock(&philo->print_mutex);
+			return ;
+		}
+		pthread_mutex_unlock(&philo->print_mutex);
+		philo_usleep(philo, 500);
 	}
+	pthread_mutex_lock(&philo->time_mutex);
+	info->now = philo->time;
+	pthread_mutex_unlock(&philo->time_mutex);
+	if (philo->time_die < info->now - info->last_meal)
+		print_death(philo, info);
 }
 
 long long	timestamp(t_philo *philo)
@@ -47,43 +74,30 @@ long long	timestamp(t_philo *philo)
 	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
 
-void	philo_usleep(t_philo *philo, int usec)
+int	philo_usleep(t_philo *philo, int usec)
 {
+	pthread_mutex_lock(&philo->print_mutex);
 	if (philo->exit)
-		return ;
+	{
+		pthread_mutex_unlock(&philo->print_mutex);
+		return (-1);
+	}
+	pthread_mutex_unlock(&philo->print_mutex);
 	if (usleep(usec) == -1)
 		print_error(philo, "usleep");
-}
-
-void	wait_start(t_philo *philo, int id)
-{
-	if (philo->exit)
-		return ;
-	while (timestamp(philo) < philo->start && philo->exit == 0)
-		philo_usleep(philo, 50);
-	if (id % 2)
-		philo_usleep(philo, 1000);
+	return (0);
 }
 
 void	init_routine(t_philo *philo, t_info *info)
 {
-	if (philo->exit)
-		return ;
-	info->fork_count = 0;
-	info->after_sleep = 0;
-	while (timestamp(philo) < philo->start && philo->exit == 0)
-		philo_usleep(philo, 50);
-	if(info->id % 2 == 0)
+	if (info->id % 2 == 0)
 	{
-		philo->fork_count[info->id - 1] = 2;
+		print_fork(philo, info, 2);
+		info->fork_count = 2;
 	}
 	else if (info->id == philo->philo_num)
 	{
-		philo->fork_count[info->id - 1] = 1;
 		print_fork(philo, info, 1);
-		philo_usleep(philo, 500);
 		info->fork_count = 1;
 	}
-	else
-		philo_usleep(philo, 500);
 }
