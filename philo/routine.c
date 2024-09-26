@@ -6,99 +6,89 @@
 /*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 19:36:05 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/25 23:14:40 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/09/27 00:08:31 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_philo.h"
 
-void	get_fork(t_philo *philo, t_info *info)
+void	print_time(int id)
 {
-	pthread_mutex_lock(&philo->fork_mutex[info->id - 1]);
-	if (philo->fork_available[info->id - 1] <= info->now)
-	{
-		print_fork(philo, info, 1);
-		philo->fork_available[info->id - 1] = LLONG_MAX;
-		++info->fork_count;
-	}
-	pthread_mutex_unlock(&philo->fork_mutex[info->id - 1]);
-	pthread_mutex_lock(&philo->fork_mutex[info->id % philo->philo_num]);
-	if (philo->fork_available[info->id % philo->philo_num] <= info->now)
-	{
-		print_fork(philo, info, 1);
-		philo->fork_available[info->id % philo->philo_num] = LLONG_MAX;
-		++info->fork_count;
-	}
-	pthread_mutex_unlock(&philo->fork_mutex[info->id % philo->philo_num]);
+	struct timeval	tv;
+
+	if (id != 2)
+		return ;
+	gettimeofday(&tv, NULL);
+	printf("time: %ld\n", tv.tv_sec * 1000000 + tv.tv_usec);
 }
 
-void	philo_eat(t_info *info, t_philo *philo)
+int	check_usleep(t_philo *philo, int usec)
 {
-	print_action(philo, info, "eating");
-	pthread_mutex_lock(&philo->time_mutex);
-	info->last_meal = philo->time;
-	info->now = philo->time;
-	pthread_mutex_unlock(&philo->time_mutex);
-	pthread_mutex_lock(&philo->fork_mutex[info->id - 1]);
-	philo->fork_available[info->id - 1] = info->now + philo->time_eat;
-	pthread_mutex_unlock(&philo->fork_mutex[info->id - 1]);
-	pthread_mutex_lock(&philo->fork_mutex[info->id % philo->philo_num]);
-	philo->fork_available[info->id % philo->philo_num] 
-		= info->now + philo->time_eat;
-	pthread_mutex_unlock(&philo->fork_mutex[info->id % philo->philo_num]);
-	wait_time(info, philo, info->now + philo->time_eat);
-	if (philo->must_eat == ++info->eat_count)
+	if (usleep(usec) == -1)
+	{
+		pthread_mutex_lock(&philo->exit_mutex);
+		if (!philo->exit)
+			printf("usleep error\n");
+		philo->exit = 1;
+		pthread_mutex_unlock(&philo->exit_mutex);
+		return (-1);
+	}
+	return (0);
+}
+
+void	philo_cycle(t_philo *philo, int *eat_count, int id)
+{
+	pthread_mutex_lock(philo->fork_mutex + id - 1);
+	print_fork(philo, id);
+	pthread_mutex_lock(philo->fork_mutex + id % philo->philo_num);
+	print_fork(philo, id);
+	print_action(philo, id, "eating");
+	pthread_mutex_lock(philo->time_mutex + id - 1);
+	philo->last_meal[id - 1] = timestamp(philo);
+	pthread_mutex_unlock(philo->time_mutex + id - 1);
+	wait_time(philo, philo->time_eat + philo->last_meal[id - 1]);
+	if (philo->must_eat != 0 && philo->must_eat == ++*eat_count)
 	{
 		pthread_mutex_lock(&philo->eat_mutex);
 		if (philo->philo_num == ++philo->finish_eat)
 		{
-			pthread_mutex_lock(&philo->print_mutex);
+			pthread_mutex_lock(&philo->exit_mutex);
 			philo->exit = 1;
-			pthread_mutex_unlock(&philo->print_mutex);
+			pthread_mutex_unlock(&philo->exit_mutex);
 		}
 		pthread_mutex_unlock(&philo->eat_mutex);
 	}
-}
-
-void	load_status(t_info *info, t_philo *philo)
-{
-	if (info->fork_count < 2)
-	{
-		info->after_sleep = 0;
-		print_action(philo, info, "thinking");
-		return ;
-	}
-	philo_eat(info, philo);
-	print_action(philo, info, "sleeping");
-	info->fork_count = 0;
-	wait_time(info, philo, info->now + philo->time_sleep);
-	info->after_sleep = 1;
+	pthread_mutex_unlock(philo->fork_mutex + id % philo->philo_num);
+	pthread_mutex_unlock(philo->fork_mutex + id - 1);
+	print_action(philo, id, "sleeping");
+	wait_time(philo, timestamp(philo) + philo->time_sleep);
 }
 
 void	*routine(void *ptr)
 {
 	t_philo	*philo;
-	t_info	info;
+	int		id;
+	int		eat_count;
 
-	memset(&info, 0, sizeof(t_info));
 	philo = (t_philo *)ptr;
 	pthread_mutex_lock(&philo->id_mutex);
-	info.id = ++philo->id;
+	id = ++philo->id;
 	pthread_mutex_unlock(&philo->id_mutex);
-	pthread_mutex_lock(&philo->time_mutex);
-	info.now = philo->time;
-	pthread_mutex_unlock(&philo->time_mutex);
-	info.last_meal = info.now;
-	init_routine(philo, &info);
+	pthread_mutex_lock(&philo->time_mutex[id - 1]);
+	philo->last_meal[id - 1] = timestamp(philo);
+	pthread_mutex_unlock(&philo->time_mutex[id - 1]);
+	if (id % 2 == 0)
+		check_usleep(philo, 500);
+	eat_count = 0;
 	while (1)
 	{
-		if (!info.after_sleep && philo_usleep(philo, 300) == -1)
+		philo_cycle(philo, &eat_count, id);
+		pthread_mutex_lock(&philo->exit_mutex);
+		if (philo->exit)
+		{
+			pthread_mutex_unlock(&philo->exit_mutex);
 			return (NULL);
-		get_fork(philo, &info);
-		if (info.fork_count == 2 || info.after_sleep)
-			load_status(&info, philo);
-		if (!info.after_sleep)
-			next_time(philo, &info);
+		}
+		pthread_mutex_unlock(&philo->exit_mutex);
 	}
-	return (NULL);
 }

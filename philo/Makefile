@@ -1,5 +1,4 @@
-CFLAGS = -Wall -Wextra -Werror 
-CFRAGS += -fsanitize=thread
+CFLAGS = -Wall -Wextra -Werror
 CC = cc
 SRCS = main.c routine.c time.c print.c init.c
 NAME = philo

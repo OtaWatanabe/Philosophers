@@ -6,7 +6,7 @@
 /*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 12:59:00 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/25 23:04:41 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/09/27 00:04:19 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,28 +17,31 @@
 //     system("leaks -q philo");
 // }
 
-void	*time_manage(void *ptr)
+void	*supervise(void *ptr)
 {
-	t_philo			*philo;
+	t_philo		*philo;
+	int			i;
 
 	philo = (t_philo *)ptr;
-	while (philo->time < philo->start)
+	while (1)
 	{
-		pthread_mutex_lock(&philo->time_mutex);
-		philo->time = timestamp(philo);
-		pthread_mutex_unlock(&philo->time_mutex);
-		philo_usleep(philo, 50);
-	}
-	while (philo_usleep(philo, 50) == 0)
-	{
-		if (philo->time < timestamp(philo))
+		i = 0;
+		while (i < philo->philo_num)
 		{
-			pthread_mutex_lock(&philo->time_mutex);
-			philo->time = timestamp(philo);
-			pthread_mutex_unlock(&philo->time_mutex);
+			pthread_mutex_lock(philo->time_mutex + i);
+			if (philo->time_die < timestamp(philo) - philo->last_meal[i])
+				print_death(philo, i + 1);
+			pthread_mutex_unlock(philo->time_mutex + i);
+			++i;
 		}
+		pthread_mutex_lock(&philo->exit_mutex);
+		if (philo->exit)
+		{
+			pthread_mutex_unlock(&philo->exit_mutex);
+			return (NULL);
+		}
+		pthread_mutex_unlock(&philo->exit_mutex);
 	}
-	return (NULL);
 }
 
 int	main(int argc, char *argv[])
@@ -48,19 +51,18 @@ int	main(int argc, char *argv[])
 
 	if (philo_init(&philo, argc, argv) == -1)
 		return (1);
-	philo.time = timestamp(&philo);
-	philo.start = philo.time + 10;
 	make_thread(&philo);
 	pthread_mutex_destroy(&philo.id_mutex);
-	pthread_mutex_destroy(&philo.print_mutex);
+	pthread_mutex_destroy(&philo.exit_mutex);
 	pthread_mutex_destroy(&philo.eat_mutex);
-	pthread_mutex_destroy(&philo.time_mutex);
 	i = 0;
 	while (i < philo.philo_num)
 	{
 		pthread_mutex_destroy(philo.fork_mutex + i);
+		pthread_mutex_destroy(philo.time_mutex + i);
 		++i;
 	}
-	free(philo.fork_available);
+	free(philo.last_meal);
 	free(philo.fork_mutex);
+	free(philo.time_mutex);
 }
