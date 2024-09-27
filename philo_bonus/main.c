@@ -6,63 +6,41 @@
 /*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 12:59:00 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/27 11:22:43 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/09/27 12:35:40 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_philo.h"
 
-// __attribute__((destructor))
-// static void destructor() {
-//     system("leaks -q philo");
-// }
-
-void	*supervise(void *ptr)
+void	*eat_count(void *ptr)
 {
-	t_philo		*philo;
-	int			i;
+	t_philo	*philo;
+	int		count;
 
+	count = 0;
 	philo = (t_philo *)ptr;
 	while (1)
 	{
-		i = 0;
-		while (i < philo->philo_num)
+		sem_wait(philo->sem_eat);
+		++count;
+		if (count == philo->philo_num)
 		{
-			pthread_mutex_lock(philo->time_mutex + i);
-			if (philo->time_die < timestamp(philo) - philo->last_meal[i])
-				print_death(philo, i + 1);
-			pthread_mutex_unlock(philo->time_mutex + i);
-			++i;
-		}
-		pthread_mutex_lock(&philo->exit_mutex);
-		if (philo->exit)
-		{
-			pthread_mutex_unlock(&philo->exit_mutex);
+			sem_post(philo->sem_kill);
 			return (NULL);
 		}
-		pthread_mutex_unlock(&philo->exit_mutex);
 	}
 }
 
 int	main(int argc, char *argv[])
 {
 	t_philo		philo;
-	int			i;
 
 	if (philo_init(&philo, argc, argv) == -1)
 		return (1);
-	make_thread(&philo);
-	pthread_mutex_destroy(&philo.id_mutex);
-	pthread_mutex_destroy(&philo.exit_mutex);
-	pthread_mutex_destroy(&philo.eat_mutex);
-	i = 0;
-	while (i < philo.philo_num)
-	{
-		pthread_mutex_destroy(philo.fork_mutex + i);
-		pthread_mutex_destroy(philo.time_mutex + i);
-		++i;
-	}
-	free(philo.last_meal);
-	free(philo.fork_mutex);
-	free(philo.time_mutex);
+	make_process(&philo);
+	sem_check_destroy(philo.sem_fork, "fork");
+	sem_check_destroy(philo.sem_print, "print");
+	sem_check_destroy(philo.sem_permission, "permission");
+	sem_check_destroy(philo.sem_eat, "eat");
+	sem_check_destroy(philo.sem_kill, "kill");
 }
