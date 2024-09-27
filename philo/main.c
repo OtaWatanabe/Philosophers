@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
+/*   By: owatanab <owatanab@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 12:59:00 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/27 11:22:43 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/09/27 18:10:23 by owatanab         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,27 @@ void	*supervise(void *ptr)
 		}
 		pthread_mutex_unlock(&philo->exit_mutex);
 	}
+}
+
+void	make_thread(t_philo *philo)
+{
+	pthread_t	*thread;
+	pthread_t	time;
+
+	thread = malloc(sizeof(pthread_t) * philo->philo_num);
+	if (thread == NULL)
+	{
+		printf("malloc error\n");
+		return ;
+	}
+	if (pthread_create(&time, NULL, supervise, (void *)philo) == -1)
+	{
+		printf("thread error\n");
+		free(thread);
+		return ;
+	}
+	create_destroy(philo, thread, time);
+	free(thread);
 }
 
 int	main(int argc, char *argv[])

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   routine.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
+/*   By: owatanab <owatanab@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 19:36:05 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/27 11:17:18 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/09/27 18:05:48 by owatanab         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 
 void	check_usleep(t_philo *philo, int usec)
 {
-	
 	if (usleep(usec) == -1)
 	{
 		pthread_mutex_lock(&philo->exit_mutex);
@@ -74,11 +73,10 @@ void	*routine(void *ptr)
 		philo_cycle(philo, &eat_count, id);
 		pthread_mutex_lock(&philo->exit_mutex);
 		if (philo->exit)
-		{
-			pthread_mutex_unlock(&philo->exit_mutex);
-			return (NULL);
-		}
+			break ;
 		pthread_mutex_unlock(&philo->exit_mutex);
 		print_action(philo, id, "thinking");
 	}
+	pthread_mutex_unlock(&philo->exit_mutex);
+	return (NULL);
 }

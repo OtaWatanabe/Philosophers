@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
+/*   By: owatanab <owatanab@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/25 23:01:51 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/27 12:26:43 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/09/27 18:07:33 by owatanab         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ int	sem_init_all(t_philo *philo)
 	philo->sem_print = sem_open("print", O_CREAT, 0644, 1);
 	philo->sem_eat = sem_open("eat", O_CREAT, 0644, 0);
 	philo->sem_kill = sem_open("kill", O_CREAT, 0644, 0);
-	if (philo->sem_fork && philo->sem_permission 
+	if (philo->sem_fork && philo->sem_permission
 		&& philo->sem_print && philo->sem_eat && philo->sem_kill)
 		return (0);
 	printf("sem_open error\n");
@@ -86,7 +86,7 @@ void	make_process(t_philo *philo)
 			philo_process(philo, i + 1);
 		++i;
 	}
-	if (philo->must_eat == 0 
+	if (philo->must_eat == 0
 		|| pthread_create(&thread, NULL, eat_count, (void *)philo) == 0)
 		sem_wait(philo->sem_kill);
 	else

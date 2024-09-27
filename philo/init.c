@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
+/*   By: owatanab <owatanab@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/25 23:01:51 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/27 09:27:35 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/09/27 18:10:18 by owatanab         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,8 @@ int	mutex_init(t_philo *philo)
 	philo->fork_mutex = malloc(sizeof(pthread_mutex_t) * philo->philo_num);
 	philo->time_mutex = malloc(sizeof(pthread_mutex_t) * philo->philo_num);
 	philo->last_meal = malloc(sizeof(long long) * philo->philo_num);
-	if (philo->fork_mutex == NULL || philo->time_mutex == NULL || philo->last_meal == NULL)
+	if (philo->fork_mutex == NULL || philo->time_mutex == NULL
+		|| philo->last_meal == NULL)
 		printf("malloc error\n");
 	else if (pthread_mutex_init(&philo->id_mutex, NULL))
 		printf("mutex init error\n");
@@ -67,7 +68,7 @@ int	philo_init_2(t_philo *philo)
 	int	i;
 
 	i = 0;
-	while (i < philo->philo_num 
+	while (i < philo->philo_num
 		&& !pthread_mutex_init(philo->fork_mutex + i, NULL))
 		++i;
 	if (i != philo->philo_num)
@@ -78,7 +79,7 @@ int	philo_init_2(t_philo *philo)
 		return (-1);
 	}
 	i = 0;
-	while (i < philo->philo_num 
+	while (i < philo->philo_num
 		&& !pthread_mutex_init(philo->time_mutex + i, NULL))
 		philo->last_meal[i++] = timestamp(philo);
 	if (i == philo->philo_num)
@@ -89,33 +90,12 @@ int	philo_init_2(t_philo *philo)
 	return (-1);
 }
 
-void	make_thread(t_philo *philo)
-{
-	pthread_t	*thread;
-	pthread_t	time;
-
-	thread = malloc(sizeof(pthread_t) * philo->philo_num);
-	if (thread == NULL)
-	{
-		printf("malloc error\n");
-		return ;
-	}
-	if (pthread_create(&time, NULL, supervise, (void *)philo) == -1)
-	{
-		printf("thread error\n");
-		free(thread);
-		return ;
-	}
-	create_destroy(philo, thread, time);
-	free(thread);
-}
-
 void	create_destroy(t_philo *philo, pthread_t *thread, pthread_t time)
 {
 	int	i;
 
 	i = 0;
-	while (pthread_create(thread + i, NULL, routine, (void *)philo) == 0 
+	while (pthread_create(thread + i, NULL, routine, (void *)philo) == 0
 		&& ++i < philo->philo_num)
 		;
 	if (i != philo->philo_num)
