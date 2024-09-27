@@ -6,24 +6,15 @@
 /*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 19:36:05 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/27 00:08:31 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/09/27 09:36:23 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_philo.h"
 
-void	print_time(int id)
+void	check_usleep(t_philo *philo, int usec)
 {
-	struct timeval	tv;
-
-	if (id != 2)
-		return ;
-	gettimeofday(&tv, NULL);
-	printf("time: %ld\n", tv.tv_sec * 1000000 + tv.tv_usec);
-}
-
-int	check_usleep(t_philo *philo, int usec)
-{
+	
 	if (usleep(usec) == -1)
 	{
 		pthread_mutex_lock(&philo->exit_mutex);
@@ -31,9 +22,7 @@ int	check_usleep(t_philo *philo, int usec)
 			printf("usleep error\n");
 		philo->exit = 1;
 		pthread_mutex_unlock(&philo->exit_mutex);
-		return (-1);
 	}
-	return (0);
 }
 
 void	philo_cycle(t_philo *philo, int *eat_count, int id)

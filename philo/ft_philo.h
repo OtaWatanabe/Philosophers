@@ -6,7 +6,7 @@
 /*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 12:59:32 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/27 00:05:17 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/09/27 09:35:28 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,12 +48,11 @@ typedef struct s_info
 	int			eat_count;
 }	t_info;
 
-int			check_usleep(t_philo *philo, int usec);
+void		check_usleep(t_philo *philo, int usec);
 void		*routine(void *philo);
 long long	timestamp(t_philo *philo);
 void		wait_time(t_philo *philo, long long msec);
 int			philo_init_2(t_philo *philo);
-int			philo_usleep(t_philo *philo, int usec);
 void		print_action(t_philo *philo, int id, char *action);
 void		print_death(t_philo *philo, int id);
 void		print_error(t_philo *philo, char *error);
