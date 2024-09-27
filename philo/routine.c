@@ -6,7 +6,7 @@
 /*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 19:36:05 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/27 09:36:23 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/09/27 11:17:18 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,5 +79,6 @@ void	*routine(void *ptr)
 			return (NULL);
 		}
 		pthread_mutex_unlock(&philo->exit_mutex);
+		print_action(philo, id, "thinking");
 	}
 }
