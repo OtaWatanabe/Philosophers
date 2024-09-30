@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: owatanab <owatanab@student.42.fr>          +#+  +:+       +#+        */
+/*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/25 23:01:51 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/27 18:07:33 by owatanab         ###   ########.fr       */
+/*   Updated: 2024/09/30 17:37:07 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,12 +28,13 @@ int	sem_init_all(t_philo *philo)
 	sem_unlink("print");
 	sem_unlink("eat");
 	sem_unlink("kill");
-	philo->sem_fork = sem_open("fork", O_CREAT, 0644, philo->philo_num);
+	philo->sem_fork = sem_open("fork",
+			O_CREAT | O_EXCL, 0644, philo->philo_num);
 	philo->sem_permission = sem_open("permission",
-			O_CREAT, 0644, (philo->philo_num + 1) / 2);
-	philo->sem_print = sem_open("print", O_CREAT, 0644, 1);
-	philo->sem_eat = sem_open("eat", O_CREAT, 0644, 0);
-	philo->sem_kill = sem_open("kill", O_CREAT, 0644, 0);
+			O_CREAT | O_EXCL, 0644, (philo->philo_num + 1) / 2);
+	philo->sem_print = sem_open("print", O_CREAT | O_EXCL, 0644, 1);
+	philo->sem_eat = sem_open("eat", O_CREAT | O_EXCL, 0644, 0);
+	philo->sem_kill = sem_open("kill", O_CREAT | O_EXCL, 0644, 0);
 	if (philo->sem_fork && philo->sem_permission
 		&& philo->sem_print && philo->sem_eat && philo->sem_kill)
 		return (0);
@@ -63,6 +64,7 @@ int	philo_init(t_philo *philo, int argc, char *argv[])
 	if (philo->philo_num == -1 || philo->time_die == -1 || philo->time_eat == -1
 		|| philo->time_sleep == -1 || philo->must_eat == -1)
 		return (-1);
+	philo->start = timestamp(philo);
 	return (sem_init_all(philo));
 }
 

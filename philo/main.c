@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: 1309839457 <1309839457@student.42.fr>      +#+  +:+       +#+        */
+/*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 12:59:00 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/30 13:49:28 by 1309839457       ###   ########.fr       */
+/*   Updated: 2024/09/30 14:52:52 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ void	*supervise(void *ptr)
 		}
 		pthread_mutex_lock(&philo->exit_mutex);
 		if (philo->exit)
-		{	
+		{
 			pthread_mutex_unlock(&philo->exit_mutex);
 			return (NULL);
 		}

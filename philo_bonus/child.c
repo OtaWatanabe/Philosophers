@@ -6,70 +6,50 @@
 /*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 14:09:48 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/27 12:31:24 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/09/30 17:32:44 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_philo.h"
 
-// void	check_usleep(t_philo *philo, int usec)
-// {
-// 	if (usleep(usec) == -1)
-// 		print_error(philo, "usleep");
-// }
-
-long long	timestamp(t_philo *philo)
+void	process_init(t_philo *philo, int id, pthread_t *thread)
 {
-	struct timeval	tv;
+	char		*sem_name;
 
-	if (gettimeofday(&tv, NULL) == -1)
+	philo->id = id;
+	sem_name = get_sem_name(id);
+	philo->last_meal = philo->start;
+	if (sem_name == NULL)
 	{
-		print_error(philo, "time access");
-		return (-1);
+		sem_post(philo->sem_kill);
+		exit(1);
 	}
-	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
-}
-
-void	wait_msec(t_philo *philo, int msec, int id)
-{
-	long long	end;
-	long long	time;
-
-	end = timestamp(philo) + msec;
-	time = timestamp(philo);
-	while (time < end)
+	sem_unlink(sem_name);
+	philo->sem_exit = sem_open(sem_name, O_CREAT | O_EXCL, 0644, 1);
+	if (philo->sem_exit == NULL)
 	{
-		if (usleep(500) == -1)
-			print_error(philo, "usleep");
-		time = timestamp(philo);
-		if (philo->last_meal + philo->time_die < time)
-			die_exit(philo, id);
+		print_error(philo, "sem open");
+		exit(1);
 	}
+	if (pthread_create(thread, NULL, routine, (void *)philo) != 0)
+	{
+		print_error(philo, "thread create");
+		exit(1);
+	}
+	pthread_detach(*thread);
 }
 
 void	philo_process(t_philo *philo, int id)
 {
 	pthread_t	thread;
 
-	philo->id = id;
-	if (pthread_mutex_init(&philo->mutex, NULL) != 0)
-	{
-		print_error(philo, "mutex init");
-		exit(1);
-	}
-	philo->last_meal = timestamp(philo);
-	if (pthread_create(&thread, NULL, routine, (void *)philo) != 0)
-	{
-		print_error(philo, "thread create");
-		exit(1);
-	}
-	pthread_detach(thread);
+	process_init(philo, id, &thread);
 	while (1)
 	{
-		pthread_mutex_lock(&philo->mutex);
+		sem_wait(philo->sem_exit);
 		if (philo->last_meal + philo->time_die < timestamp(philo))
 			die_exit(philo, id);
-		pthread_mutex_unlock(&philo->mutex);
+		sem_post(philo->sem_exit);
 	}
 }
 
@@ -82,9 +62,9 @@ void	philo_wait_eat(t_philo *philo, int *eat_count)
 	print_fork(philo, philo->id);
 	philo->last_meal = timestamp(philo);
 	print_action(philo, philo->id, "eating");
-	pthread_mutex_lock(&philo->mutex);
+	sem_wait(philo->sem_exit);
 	philo->last_meal = timestamp(philo);
-	pthread_mutex_unlock(&philo->mutex);
+	sem_post(philo->sem_exit);
 	if (++*eat_count == philo->must_eat)
 		sem_post(philo->sem_eat);
 	wait_msec(philo, philo->time_eat, philo->id);

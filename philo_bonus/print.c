@@ -6,7 +6,7 @@
 /*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/27 10:01:47 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/27 12:22:22 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/09/30 17:24:07 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ void	print_fork(t_philo *philo, int id)
 {
 	long long	time;
 
-	time = timestamp(philo);
+	time = timestamp(philo) - philo->start;
 	sem_wait(philo->sem_print);
 	printf("%lld %d has taken a fork\n", time, id);
 	sem_post(philo->sem_print);
@@ -26,7 +26,7 @@ void	print_action(t_philo *philo, int id, char *action)
 {
 	long long	time;
 
-	time = timestamp(philo);
+	time = timestamp(philo) - philo->start;
 	sem_wait(philo->sem_print);
 	printf("%lld %d is %s\n", time, id, action);
 	sem_post(philo->sem_print);
@@ -36,7 +36,7 @@ void	die_exit(t_philo *philo, int id)
 {
 	long long	time;
 
-	time = timestamp(philo);
+	time = timestamp(philo) - philo->start;
 	sem_wait(philo->sem_print);
 	printf("%lld %d died\n", time, id);
 	sem_post(philo->sem_kill);

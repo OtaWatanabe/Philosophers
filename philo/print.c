@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   print.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: 1309839457 <1309839457@student.42.fr>      +#+  +:+       +#+        */
+/*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 15:24:34 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/30 13:48:08 by 1309839457       ###   ########.fr       */
+/*   Updated: 2024/09/30 17:15:05 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ void	print_action(t_philo *philo, int id, char *action)
 {
 	long long	time;
 
-	time = timestamp(philo);
+	time = timestamp(philo) - philo->start;
 	pthread_mutex_lock(&philo->exit_mutex);
 	if (philo->exit == 0)
 		printf("%lld %d is %s\n", time, id, action);
@@ -27,7 +27,7 @@ void	print_death(t_philo *philo, int id)
 {
 	long long	time;
 
-	time = timestamp(philo);
+	time = timestamp(philo) - philo->start;
 	pthread_mutex_lock(&philo->exit_mutex);
 	if (philo->exit == 0)
 	{
@@ -41,7 +41,7 @@ void	print_fork(t_philo *philo, int id)
 {
 	long long	time;
 
-	time = timestamp(philo);
+	time = timestamp(philo) - philo->start;
 	pthread_mutex_lock(&philo->exit_mutex);
 	if (philo->exit == 0)
 		printf("%lld %d has taken a fork\n", time, id);

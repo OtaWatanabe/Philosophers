@@ -1,6 +1,6 @@
 CFLAGS = -Wall -Wextra -Werror
 CC = cc
-SRCS = main.c init.c child.c print.c
+SRCS = main.c init.c child.c print.c process_utility.c
 NAME = philo
 OBJS = $(SRCS:.c=.o)
 all: $(NAME)
