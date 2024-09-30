@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: owatanab <owatanab@student.42.fr>          +#+  +:+       +#+        */
+/*   By: 1309839457 <1309839457@student.42.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 12:59:00 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/27 18:10:23 by owatanab         ###   ########.fr       */
+/*   Updated: 2024/09/30 13:49:28 by 1309839457       ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ void	*supervise(void *ptr)
 		}
 		pthread_mutex_lock(&philo->exit_mutex);
 		if (philo->exit)
-		{
+		{	
 			pthread_mutex_unlock(&philo->exit_mutex);
 			return (NULL);
 		}
@@ -48,6 +48,7 @@ void	make_thread(t_philo *philo)
 {
 	pthread_t	*thread;
 	pthread_t	time;
+	int			i;
 
 	thread = malloc(sizeof(pthread_t) * philo->philo_num);
 	if (thread == NULL)
@@ -55,6 +56,10 @@ void	make_thread(t_philo *philo)
 		printf("malloc error\n");
 		return ;
 	}
+	philo->start = timestamp(philo);
+	i = 0;
+	while (i < philo->philo_num)
+		philo->last_meal[i++] = philo->start;
 	if (pthread_create(&time, NULL, supervise, (void *)philo) == -1)
 	{
 		printf("thread error\n");

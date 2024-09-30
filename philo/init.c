@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: owatanab <owatanab@student.42.fr>          +#+  +:+       +#+        */
+/*   By: 1309839457 <1309839457@student.42.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/25 23:01:51 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/27 18:10:18 by owatanab         ###   ########.fr       */
+/*   Updated: 2024/09/30 13:31:10 by 1309839457       ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,8 +80,8 @@ int	philo_init_2(t_philo *philo)
 	}
 	i = 0;
 	while (i < philo->philo_num
-		&& !pthread_mutex_init(philo->time_mutex + i, NULL))
-		philo->last_meal[i++] = timestamp(philo);
+		&& !pthread_mutex_init(philo->time_mutex + i++, NULL))
+		;
 	if (i == philo->philo_num)
 		return (0);
 	printf("mutex init error\n");

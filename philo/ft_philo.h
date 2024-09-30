@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_philo.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
+/*   By: 1309839457 <1309839457@student.42.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 12:59:32 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/27 09:35:28 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/09/30 13:20:11 by 1309839457       ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,10 @@ typedef struct s_philo
 	int				time_eat;
 	int				time_sleep;
 	int				must_eat;
-	long long		*last_meal;
 	int				exit;
 	int				finish_eat;
+	long long		*last_meal;
+	long long		start;
 	pthread_mutex_t	*time_mutex;
 	pthread_mutex_t	exit_mutex;
 	pthread_mutex_t	id_mutex;
