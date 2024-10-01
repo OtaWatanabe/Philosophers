@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   process_utility.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
+/*   By: owatanab <owatanab@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 17:10:54 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/30 17:13:03 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/10/01 18:30:01 by owatanab         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ char	*get_sem_name(int n)
 		printf("malloc error\n");
 		return (NULL);
 	}
+	ret[c + 3] = '\0';
 	while (n / 10)
 	{
 		ret[--c] = '0' + n % 10;
