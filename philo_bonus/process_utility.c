@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   process_utility.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: owatanab <owatanab@student.42.fr>          +#+  +:+       +#+        */
+/*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/30 17:10:54 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/10/01 18:30:01 by owatanab         ###   ########.fr       */
+/*   Updated: 2024/10/03 16:42:50 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,10 +61,10 @@ long long	timestamp(t_philo *philo)
 	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
 
-void	wait_msec(t_philo *philo, int msec, int id)
+void	wait_till(t_philo *philo, int msec, int id)
 {
-	long long	end;
-	long long	time;
+	u_int64_t	end;
+	u_int64_t	time;
 
 	end = timestamp(philo) + msec;
 	time = timestamp(philo);
