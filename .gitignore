@@ -2,6 +2,6 @@
 *.o
 test.c
 *a.out
-.vscode
+*.vscode
 philo/philo
 philo_bonus/philo

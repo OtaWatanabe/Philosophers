@@ -1,6 +1,18 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2024/10/02 12:21:51 by otawatanabe       #+#    #+#              #
+#    Updated: 2024/10/02 13:48:22 by otawatanabe      ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
 CFLAGS = -Wall -Wextra -Werror
 CC = cc
-SRCS = main.c routine.c time.c print.c init.c
+SRCS = clean_up.c exit.c init.c input.c main.c print.c routine.c time.c
 NAME = philo
 OBJS = $(SRCS:.c=.o)
 all: $(NAME)

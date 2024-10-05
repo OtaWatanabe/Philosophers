@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/09/18 12:59:00 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/30 14:52:52 by otawatanabe      ###   ########.fr       */
+/*   Created: 2024/10/01 23:19:42 by otawatanabe       #+#    #+#             */
+/*   Updated: 2024/10/02 14:16:08 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,19 @@
 // static void destructor() {
 //     system("leaks -q philo");
 // }
+
+void	join_all(t_philo *philo, pthread_t supervise_thread)
+{
+	int	i;
+
+	i = 0;
+	pthread_join(supervise_thread, NULL);
+	while (i < philo->philo_num)
+	{
+		pthread_join(philo->thread[i], NULL);
+		++i;
+	}
+}
 
 void	*supervise(void *ptr)
 {
@@ -28,67 +41,47 @@ void	*supervise(void *ptr)
 		i = 0;
 		while (i < philo->philo_num)
 		{
-			pthread_mutex_lock(philo->time_mutex + i);
-			if (philo->time_die < timestamp(philo) - philo->last_meal[i])
-				print_death(philo, i + 1);
-			pthread_mutex_unlock(philo->time_mutex + i);
+			check_die_update(philo, i + 1, 0);
 			++i;
 		}
-		pthread_mutex_lock(&philo->exit_mutex);
-		if (philo->exit)
-		{
-			pthread_mutex_unlock(&philo->exit_mutex);
+		if (check_exit(philo))
 			return (NULL);
-		}
-		pthread_mutex_unlock(&philo->exit_mutex);
 	}
 }
 
-void	make_thread(t_philo *philo)
+int	start_simulation(t_philo *philo, pthread_t *supervise_thread)
 {
-	pthread_t	*thread;
-	pthread_t	time;
-	int			i;
+	int	i;
 
-	thread = malloc(sizeof(pthread_t) * philo->philo_num);
-	if (thread == NULL)
-	{
-		printf("malloc error\n");
-		return ;
-	}
-	philo->start = timestamp(philo);
-	i = 0;
-	while (i < philo->philo_num)
-		philo->last_meal[i++] = philo->start;
-	if (pthread_create(&time, NULL, supervise, (void *)philo) == -1)
+	if (pthread_create(supervise_thread, NULL, supervise, (void *)philo) == -1)
 	{
 		printf("thread error\n");
-		free(thread);
-		return ;
+		return (-1);
 	}
-	create_destroy(philo, thread, time);
-	free(thread);
+	i = 0;
+	while (pthread_create(philo->thread + i, NULL, routine, (void *)philo) == 0
+		&& ++i < philo->philo_num && check_exit(philo) == 0)
+		;
+	if (i != philo->philo_num)
+	{
+		if (!check_exit(philo))
+			print_error(philo, "thread", 0);
+		while (i--)
+			pthread_join(philo->thread[i], NULL);
+		pthread_join(*supervise_thread, NULL);
+		return (-1);
+	}
+	return (0);
 }
 
 int	main(int argc, char *argv[])
 {
 	t_philo		philo;
-	int			i;
+	pthread_t	supervise_thread;
 
 	if (philo_init(&philo, argc, argv) == -1)
 		return (1);
-	make_thread(&philo);
-	pthread_mutex_destroy(&philo.id_mutex);
-	pthread_mutex_destroy(&philo.exit_mutex);
-	pthread_mutex_destroy(&philo.eat_mutex);
-	i = 0;
-	while (i < philo.philo_num)
-	{
-		pthread_mutex_destroy(philo.fork_mutex + i);
-		pthread_mutex_destroy(philo.time_mutex + i);
-		++i;
-	}
-	free(philo.last_meal);
-	free(philo.fork_mutex);
-	free(philo.time_mutex);
+	if (start_simulation(&philo, &supervise_thread) == 0)
+		join_all(&philo, supervise_thread);
+	clean_up(&philo);
 }

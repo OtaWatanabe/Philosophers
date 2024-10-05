@@ -3,71 +3,43 @@
 /*                                                        :::      ::::::::   */
 /*   routine.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: 1309839457 <1309839457@student.42.fr>      +#+  +:+       +#+        */
+/*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/09/18 19:36:05 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/30 13:48:24 by 1309839457       ###   ########.fr       */
+/*   Created: 2024/10/02 11:28:46 by otawatanabe       #+#    #+#             */
+/*   Updated: 2024/10/02 13:22:45 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_philo.h"
 
-void	check_usleep(t_philo *philo, int usec)
+void	alone_case(t_philo *philo)
 {
-	if (usleep(usec) == -1)
+	print_action(philo, 1, "has taken a fork");
+	while (1)
 	{
-		pthread_mutex_lock(&philo->exit_mutex);
-		if (!philo->exit)
-			printf("usleep error\n");
-		philo->exit = 1;
-		pthread_mutex_unlock(&philo->exit_mutex);
+		if (check_exit(philo))
+			return ;
 	}
 }
 
-int	philo_cycle_1(t_philo *philo, int id)
+void	philo_eat(t_philo *philo, int *eat_count, int id)
 {
 	pthread_mutex_lock(philo->fork_mutex + id - 1);
-	print_fork(philo, id);
-	while (philo->philo_num == 1)
-	{
-		pthread_mutex_lock(&philo->exit_mutex);
-		if (philo->exit)
-		{
-			pthread_mutex_unlock(&philo->exit_mutex);
-			pthread_mutex_unlock(philo->fork_mutex + id - 1);
-			return (-1);
-		}
-		pthread_mutex_unlock(&philo->exit_mutex);
-	}
+	print_action(philo, id, "has taken a fork");
 	pthread_mutex_lock(philo->fork_mutex + id % philo->philo_num);
-	print_fork(philo, id);
-	print_action(philo, id, "eating");
-	pthread_mutex_lock(philo->time_mutex + id - 1);
-	philo->last_meal[id - 1] = timestamp(philo);
-	pthread_mutex_unlock(philo->time_mutex + id - 1);
-	wait_time(philo, philo->time_eat + philo->last_meal[id - 1]);
+	print_action(philo, id, "has taken a fork");
+	check_die_update(philo, id, 1);
+	print_action(philo, id, "is eating");
+	wait_till(philo, philo->time_eat + philo->last_meal[id - 1]);
 	pthread_mutex_unlock(philo->fork_mutex + id % philo->philo_num);
 	pthread_mutex_unlock(philo->fork_mutex + id - 1);
-	return (0);
-}
-
-void	philo_cycle(t_philo *philo, int *eat_count, int id)
-{
-	if (philo_cycle_1(philo, id) == -1)
-		return ;
 	if (philo->must_eat != 0 && philo->must_eat == ++*eat_count)
 	{
 		pthread_mutex_lock(&philo->eat_mutex);
 		if (philo->philo_num == ++philo->finish_eat)
-		{
-			pthread_mutex_lock(&philo->exit_mutex);
-			philo->exit = 1;
-			pthread_mutex_unlock(&philo->exit_mutex);
-		}
+			assign_exit(philo);
 		pthread_mutex_unlock(&philo->eat_mutex);
 	}
-	print_action(philo, id, "sleeping");
-	wait_time(philo, timestamp(philo) + philo->time_sleep);
 }
 
 void	*routine(void *ptr)
@@ -80,21 +52,21 @@ void	*routine(void *ptr)
 	pthread_mutex_lock(&philo->id_mutex);
 	id = ++philo->id;
 	pthread_mutex_unlock(&philo->id_mutex);
-	pthread_mutex_lock(&philo->time_mutex[id - 1]);
-	philo->last_meal[id - 1] = timestamp(philo);
-	pthread_mutex_unlock(&philo->time_mutex[id - 1]);
 	if (id % 2 == 0)
 		check_usleep(philo, 500);
 	eat_count = 0;
+	if (philo->philo_num == 1)
+	{
+		alone_case(philo);
+		return (NULL);
+	}
 	while (1)
 	{
-		philo_cycle(philo, &eat_count, id);
-		pthread_mutex_lock(&philo->exit_mutex);
-		if (philo->exit)
-			break ;
-		pthread_mutex_unlock(&philo->exit_mutex);
-		print_action(philo, id, "thinking");
+		philo_eat(philo, &eat_count, id);
+		print_action(philo, id, "is sleeping");
+		wait_till(philo, timestamp(philo, 0) + philo->time_sleep);
+		print_action(philo, id, "is thinking");
+		if (check_exit(philo))
+			return (NULL);
 	}
-	pthread_mutex_unlock(&philo->exit_mutex);
-	return (NULL);
 }

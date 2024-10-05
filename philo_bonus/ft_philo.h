@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/09/18 12:59:32 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/09/30 17:22:30 by otawatanabe      ###   ########.fr       */
+/*   Created: 2024/10/03 15:41:33 by otawatanabe       #+#    #+#             */
+/*   Updated: 2024/10/05 22:40:47 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,48 +24,40 @@
 
 typedef struct s_philo
 {
-	int				exit;
-	int				id;
-	int				philo_num;
-	int				time_die;
-	int				time_eat;
-	int				time_sleep;
-	int				must_eat;
-	long long		last_meal;
-	long long		start;
-	sem_t			*sem_eat;
-	sem_t			*sem_fork;
-	sem_t			*sem_kill;
-	sem_t			*sem_permission;
-	sem_t			*sem_print;
-	sem_t			*sem_exit;
+	int			exit;
+	int			id;
+	int			philo_num;
+	int			time_die;
+	int			time_eat;
+	int			time_sleep;
+	int			must_eat;
+	u_int64_t	last_meal;
+	u_int64_t	start;
+	sem_t		*sem_eat;
+	sem_t		*sem_fork;
+	sem_t		*sem_kill;
+	sem_t		*sem_permission;
+	sem_t		*sem_print;
+	sem_t		*sem_time;
 }	t_philo;
 
-typedef struct s_info
-{
-	int			id;
-	long long	now;
-	long long	last_meal;
-	int			after_sleep;
-	int			fork_count;
-	int			eat_count;
-}	t_info;
-
-int			check_atoi(const char *str);
+int			check_atoi(char *str);
+void		clean_up(t_philo *philo);
 int			count_size(int n);
-void		die_exit(t_philo *philo, int id);
 void		*eat_count(void *ptr);
+int			get_input(t_philo *philo, int argc, char *argv[]);
 char		*get_sem_name(int n);
 void		make_process(t_philo *philo);
+void		philo_eat(t_philo *philo, int *eat_count);
 int			philo_init(t_philo *philo, int argc, char *argv[]);
 void		philo_process(t_philo *philo, int id);
-void		print_action(t_philo *philo, int id, char *action);
-void		print_error(t_philo *philo, char *error);
-void		print_fork(t_philo *philo, int id);
+int			philo_sem_init(t_philo *philo);
+void		print_action(t_philo *philo, char *action);
+void		print_error(t_philo *philo, char *error, int if_wait);
 void		*routine(void *ptr);
 void		sem_check_destroy(sem_t *sem, char *str);
-int			sem_init_all(t_philo *philo);
-long long	timestamp(t_philo *philo);
-void		wait_msec(t_philo *philo, int msec, int id);
+void		start_routine(t_philo *philo, int id, pthread_t *thread);
+u_int64_t	timestamp(t_philo *philo, int if_wait);
+void		wait_till(t_philo *philo, u_int64_t time);
 
 #endif
