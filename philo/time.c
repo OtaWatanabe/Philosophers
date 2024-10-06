@@ -6,7 +6,7 @@
 /*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/02 10:18:36 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/10/03 16:39:38 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/10/06 16:58:53 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,4 +44,20 @@ void	check_usleep(t_philo *philo, int usec)
 {
 	if (usleep(usec) == -1)
 		print_error(philo, "usleep", 0);
+}
+
+int	time_init(t_philo *philo)
+{
+	int	i;
+
+	philo->start = timestamp(philo, 0);
+	if (philo->exit)
+	{
+		clean_up(philo);
+		return (-1);
+	}
+	i = 0;
+	while (i < philo->philo_num)
+		philo->last_meal[i++] = philo->start;
+	return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/01 23:23:48 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/10/02 13:22:35 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/10/06 16:59:27 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,8 @@ int	philo_init(t_philo *philo, int argc, char *argv[])
 	if (malloc_philo(philo) == -1)
 		return (-1);
 	if (philo_mutex_init(philo) == -1)
+		return (-1);
+	if (time_init(philo) == -1)
 		return (-1);
 	return (0);
 }
@@ -68,28 +70,23 @@ int	philo_mutex_init(t_philo *philo)
 
 int	philo_array_init(t_philo *philo)
 {
-	int	i;
-
 	if (mutex_array_init(philo->time_mutex, philo->philo_num) == -1)
 	{
+		pthread_mutex_destroy(&philo->exit_mutex);
+		pthread_mutex_destroy(&philo->id_mutex);
+		pthread_mutex_destroy(&philo->eat_mutex);
 		free_philo(philo);
 		return (-1);
 	}
 	if (mutex_array_init(philo->fork_mutex, philo->philo_num) == -1)
 	{
+		pthread_mutex_destroy(&philo->exit_mutex);
+		pthread_mutex_destroy(&philo->id_mutex);
+		pthread_mutex_destroy(&philo->eat_mutex);
 		destroy_array_mutex(philo->time_mutex, philo->philo_num);
 		free_philo(philo);
 		return (-1);
 	}
-	philo->start = timestamp(philo, 0);
-	if (philo->exit)
-	{
-		clean_up(philo);
-		return (-1);
-	}
-	i = 0;
-	while (i < philo->philo_num)
-		philo->last_meal[i++] = philo->start;
 	return (0);
 }
 

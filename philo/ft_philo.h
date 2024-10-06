@@ -6,7 +6,7 @@
 /*   By: otawatanabe <otawatanabe@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/01 23:20:11 by otawatanabe       #+#    #+#             */
-/*   Updated: 2024/10/03 16:36:41 by otawatanabe      ###   ########.fr       */
+/*   Updated: 2024/10/06 16:59:44 by otawatanabe      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,7 @@ void		print_error(t_philo *philo, char *error, int if_lock);
 void		*routine(void *ptr);
 int			start_simulation(t_philo *philo, pthread_t *supervise_thread);
 void		*supervise(void *ptr);
+int			time_init(t_philo *philo);
 u_int64_t	timestamp(t_philo *philo, int if_lock);
 void		wait_till(t_philo *philo, u_int64_t time);
 
