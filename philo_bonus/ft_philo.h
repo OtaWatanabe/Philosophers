@@ -21,7 +21,7 @@
 # include <sys/time.h>
 # include <limits.h>
 # include <semaphore.h>
-#include <fcntl.h>
+# include <fcntl.h>
 
 typedef struct s_philo
 {
