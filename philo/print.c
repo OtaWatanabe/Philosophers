@@ -37,7 +37,7 @@ void	print_action(t_philo *philo, int id, char *action)
 	time = timestamp(philo, 0) - philo->start;
 	if (philo->exit == 0)
 	{
-		printf("%lld %d %s\n", time, id, action);
+		printf("%ld %d %s\n", time, id, action);
 		if (action[0] == 'd')
 			philo->exit = 1;
 	}

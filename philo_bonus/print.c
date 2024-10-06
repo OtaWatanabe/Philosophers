@@ -19,7 +19,7 @@ void	print_action(t_philo *philo, char *action)
 	sem_wait(philo->sem_print);
 	time = timestamp(philo, 1);
 	if (time != 0)
-		printf("%lld %d %s\n", time - philo->start, philo->id, action);
+		printf("%ld %d %s\n", time - philo->start, philo->id, action);
 	if (action[0] == 'd')
 		sem_post(philo->sem_kill);
 	else
