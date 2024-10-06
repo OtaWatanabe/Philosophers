@@ -34,7 +34,7 @@ void	print_action(t_philo *philo, int id, char *action)
 	u_int64_t	time;
 
 	pthread_mutex_lock(&philo->exit_mutex);
-	time = timestamp(philo, 0) - philo->start;
+	time = timestamp(philo, 1) - philo->start;
 	if (philo->exit == 0)
 	{
 		printf("%ld %d %s\n", time, id, action);
