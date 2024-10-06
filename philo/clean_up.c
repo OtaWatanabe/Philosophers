@@ -14,6 +14,9 @@
 
 void	clean_up(t_philo *philo)
 {
+	pthread_mutex_destroy(&philo->exit_mutex);
+	pthread_mutex_destroy(&philo->id_mutex);
+	pthread_mutex_destroy(&philo->eat_mutex);
 	destroy_array_mutex(philo->time_mutex, philo->philo_num);
 	destroy_array_mutex(philo->fork_mutex, philo->philo_num);
 	free_philo(philo);
